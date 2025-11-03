@@ -210,6 +210,9 @@ static bool in_rbtree_lock_required_cb(struct bpf_verifier_env *env);
 static int ref_set_non_owning(struct bpf_verifier_env *env,
 			      struct bpf_reg_state *reg);
 static bool is_trusted_reg(const struct bpf_reg_state *reg);
+static int process_bpf_exit_full(struct bpf_verifier_env *env,
+				 bool *do_print_state,
+				 bool exception_exit)
 
 static bool bpf_map_ptr_poisoned(const struct bpf_insn_aux_data *aux)
 {
@@ -11915,7 +11918,7 @@ static int check_helper_call(struct bpf_verifier_env *env,
 
 	if (func_id == BPF_FUNC_tail_call) {
 		struct bpf_verifier_state *branch;
-		branch = push_stack(env, idx + 1, idx, false);
+		branch = push_stack(env, env->insn_idx + 1, env->insn_idx, false);
 		if (IS_ERR(branch))
 			return PTR_ERR(branch);
 		clear_all_pkt_pointers(env);
