@@ -11399,8 +11399,10 @@ static inline bool in_sleepable_context(struct bpf_verifier_env *env)
 	       in_sleepable(env);
 }
 
-static int check_helper_call(struct bpf_verifier_env *env, struct bpf_insn *insn,
-			     int *insn_idx_p)
+static int check_helper_call(struct bpf_verifier_env *env,
+			     struct bpf_insn *insn,
+			     int *insn_idx_p,
+			     bool *do_print_state)
 {
 	enum bpf_prog_type prog_type = resolve_prog_type(env->prog);
 	bool returns_cpu_specific_alloc_ptr = false;
@@ -11909,6 +11911,15 @@ static int check_helper_call(struct bpf_verifier_env *env, struct bpf_insn *insn
 		if (check_get_func_ip(env))
 			return -ENOTSUPP;
 		env->prog->call_get_func_ip = true;
+	}
+
+	if (func_id == BPF_FUNC_tail_call) {
+		struct bpf_verifier_state *branch;
+		branch = push_stack(env, idx + 1, idx, false);
+		if (IS_ERR(branch))
+			return PTR_ERR(branch);
+		clear_all_pkt_pointers(env);
+		return process_bpf_exit_full(env, do_print_state, false);
 	}
 
 	if (changes_data)
@@ -19957,7 +19968,7 @@ static int do_check_insn(struct bpf_verifier_env *env, bool *do_print_state)
 				if (!err && is_bpf_throw_kfunc(insn))
 					return process_bpf_exit_full(env, do_print_state, true);
 			} else {
-				err = check_helper_call(env, insn, &env->insn_idx);
+				err = check_helper_call(env, insn, &env->insn_idx, do_print_state);
 			}
 			if (err)
 				return err;
