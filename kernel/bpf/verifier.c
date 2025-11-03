@@ -11918,6 +11918,7 @@ static int check_helper_call(struct bpf_verifier_env *env,
 
 	if (func_id == BPF_FUNC_tail_call) {
 		struct bpf_verifier_state *branch;
+		mark_reg_scratched(env, BPF_REG_0);
 		branch = push_stack(env, env->insn_idx + 1, env->insn_idx, false);
 		if (IS_ERR(branch))
 			return PTR_ERR(branch);
