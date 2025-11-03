@@ -212,7 +212,7 @@ static int ref_set_non_owning(struct bpf_verifier_env *env,
 static bool is_trusted_reg(const struct bpf_reg_state *reg);
 static int process_bpf_exit_full(struct bpf_verifier_env *env,
 				 bool *do_print_state,
-				 bool exception_exit)
+				 bool exception_exit);
 
 static bool bpf_map_ptr_poisoned(const struct bpf_insn_aux_data *aux)
 {
